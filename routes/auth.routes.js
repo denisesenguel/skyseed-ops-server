@@ -15,9 +15,9 @@ const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 router.post("/signup", (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, firstName } = req.body;
 
-  if (!email || !password) {
+  if (!email || !password || !firstName) {
     return res
       .status(400)
       .json({ errorMessage: "Please provide all required fields." });
@@ -53,12 +53,14 @@ router.post("/signup", (req, res) => {
         return User.create({
           email,
           password: hashedPassword,
+          firstName,
+          role: 'internal'
         });
       })
       .then((createdUser) => {
         // Removing password hash to not expose publicly
-        const { email, _id } = createdUser;
-        const user = { email, _id };
+        const { email, _id, firstName, role } = createdUser;
+        const user = { email, _id, firstName, role };
         res.status(201).json({ user: user });
       })
       .catch((error) => {
@@ -97,8 +99,8 @@ router.post("/login", (req, res, next) => {
             return res.status(401).json({ errorMessage: "Unable to authenticate user." });
           }
           // Deconstruct to not expose password hash
-          const { _id, email } = foundUser;
-          const payload = { _id, email };
+          const { _id, email, firstName, role } = foundUser;
+          const payload = { _id, email, firstName, role };
           // Create and sign JWT token
           const authToken = jwt.sign(
             payload,
