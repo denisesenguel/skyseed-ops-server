@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const Project = require("../models/Project.model");
 const mongoose = require("mongoose");
+const { isValidMongooseId } = require("../middleware/isValidMongooseId");
 
 router.post("/", async (req, res, next) => {
     try {
@@ -23,13 +24,8 @@ router.get("/", async (req, res, next) => {
     }
 });
 
-router.get("/:projectId", async (req, res, next) => {
-    try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.projectId)) {
-            return res.status(400).json({
-                message: 'Invalid project ID specified'
-            });
-        }
+router.get("/:projectId", isValidMongooseId, async (req, res, next) => {
+    try { 
         const { projectId } = req.params;
         const myProject = await Project.findById(projectId).populate("managers");
         res.status(200).json(myProject);
@@ -38,13 +34,8 @@ router.get("/:projectId", async (req, res, next) => {
     }
 });
 
-router.put("/:projectId", async (req, res, next) => {
+router.put("/:projectId", isValidMongooseId, async (req, res, next) => {
     try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.projectId)) {
-            return res.status(400).json({
-                message: 'Invalid project ID specified'
-            });
-        }
         const { projectId } = req.params;
         const updatedProject = await Project.findByIdAndUpdate(projectId, req.body, { new: true });
         return res.status(200).json(updatedProject);
@@ -56,14 +47,8 @@ router.put("/:projectId", async (req, res, next) => {
     }
 });
 
-router.delete("/:projectId", async (req, res, next) => {
+router.delete("/:projectId", isValidMongooseId, async (req, res, next) => {
     try {
-        // define this as middleware
-        if (!mongoose.Types.ObjectId.isValid(req.params.projectId)) {
-            return res.status(400).json({
-                message: 'Invalid project ID specified'
-            });
-        }
         const { projectId } = req.params;
         await Project.findByIdAndDelete(projectId);
         return res.status(200).json({ message: "Project successfully deleted."});
