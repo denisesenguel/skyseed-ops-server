@@ -14,7 +14,7 @@ const User = require("../models/User.model");
 // Require necessary middleware in order to control access to specific routes
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 
-router.post("/signup", (req, res) => {
+router.post("/signup", (req, res, next) => {
   const { email, password, firstName } = req.body;
 
   if (!email || !password || !firstName) {
