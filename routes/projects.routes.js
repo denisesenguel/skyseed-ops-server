@@ -1,6 +1,5 @@
 const router = require("express").Router();
 const Project = require("../models/Project.model");
-const mongoose = require("mongoose");
 const { isValidMongooseId } = require("../middleware/isValidMongooseId");
 
 router.post("/", async (req, res, next) => {
@@ -9,7 +8,7 @@ router.post("/", async (req, res, next) => {
         return res.status(201).json(createdUser);
     } catch (err) {
         if (err.code === 11000) {
-            res.status(400).json({ message: "Title already taken."})
+            return res.status(400).json({ message: "Title already taken."})
         }
         next(err);
     }
@@ -24,33 +23,36 @@ router.get("/", async (req, res, next) => {
     }
 });
 
-router.get("/:projectId", isValidMongooseId, async (req, res, next) => {
+router.get("/:id", isValidMongooseId, async (req, res, next) => {
     try { 
-        const { projectId } = req.params;
-        const myProject = await Project.findById(projectId).populate("managers");
-        res.status(200).json(myProject);
+        const myProject = await Project.findById(req.params.id).populate("managers");
+        if (!myProject) {
+            return res.status(404).json({ message: "Project does not exist. " });
+        }
+        return res.status(200).json(myProject);
     } catch (err) {
         next(err);
     }
 });
 
-router.put("/:projectId", isValidMongooseId, async (req, res, next) => {
+router.put("/:id", isValidMongooseId, async (req, res, next) => {
     try {
-        const { projectId } = req.params;
-        const updatedProject = await Project.findByIdAndUpdate(projectId, req.body, { new: true });
+        const updatedProject = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedProject) {
+            return res.status(404).json({ message: "Project does not exist" })
+        } 
         return res.status(200).json(updatedProject);
     } catch (err) {
         if (err.code === 11000) {
-            res.status(400).json({ message: "Title already taken."})
+            return res.status(400).json({ message: "Title already taken."})
         }
         next(err);
     }
 });
 
-router.delete("/:projectId", isValidMongooseId, async (req, res, next) => {
+router.delete("/:id", isValidMongooseId, async (req, res, next) => {
     try {
-        const { projectId } = req.params;
-        await Project.findByIdAndDelete(projectId);
+        await Project.findByIdAndDelete(req.params.id);
         return res.status(200).json({ message: "Project successfully deleted."});
     } catch (err) {
         next(err);

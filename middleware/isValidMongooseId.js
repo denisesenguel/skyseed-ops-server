@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 
 function isValidMongooseId(req, res, next) {
-    // generalize this to id (take as fcn param)
-    if (!mongoose.Types.ObjectId.isValid(req.params.projectId)) {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
         return res.status(400).json({
             message: 'Invalid Mongo Object ID specified'
         });
