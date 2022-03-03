@@ -15,7 +15,7 @@ const projectSchema = new Schema(
         season: {
             type: String,
             required: true,
-            enum: ['Spring', 'Summer', 'Autumn', 'Winter']
+            enum: ['Spring', 'Summer', 'Fall', 'Winter']
         },
         year: {
             type: Number,
