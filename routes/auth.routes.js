@@ -20,7 +20,7 @@ router.post("/signup", (req, res, next) => {
   if (!email || !password || !firstName) {
     return res
       .status(400)
-      .json({ errorMessage: "Please provide all required fields." });
+      .json({ message: "Please provide all required fields." });
   }
 
   // Use regex to validate the email format
@@ -41,7 +41,7 @@ router.post("/signup", (req, res, next) => {
   User.findOne({ email }).then((found) => {
     // If the user is found, send message
     if (found) {
-      return res.status(400).json({ errorMessage: "Email already taken." });
+      return res.status(400).json({ message: "Email already taken." });
     }
 
     // if user is not found, create a new user - start with hashing the password
@@ -65,7 +65,7 @@ router.post("/signup", (req, res, next) => {
       })
       .catch((error) => {
         if (error instanceof mongoose.Error.ValidationError) {
-          return res.status(400).json({ errorMessage: error.message });
+          return res.status(400).json({ message: error.message });
         } else {
           // Hand over to error handling middleware
           next(error)
