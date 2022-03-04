@@ -7,6 +7,11 @@ const projectSchema = new Schema(
             unique: true,
             required: true
         }, 
+        owner: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
         description: String,
         location: {
             type: String,
