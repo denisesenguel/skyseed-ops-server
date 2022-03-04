@@ -14,6 +14,15 @@ const User = require("../models/User.model");
 // Require necessary middleware in order to control access to specific routes
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 
+function getAuthToken(payload) {
+  const authToken = jwt.sign(
+    payload,
+    process.env.TOKEN_SECRET,
+    { algorithm: 'HS256', expiresIn: "6h"}
+    );
+  return authToken;
+}
+
 router.post("/signup", (req, res, next) => {
   const { email, password, firstName } = req.body;
 
@@ -60,8 +69,10 @@ router.post("/signup", (req, res, next) => {
       .then((createdUser) => {
         // Removing password hash to not expose publicly
         const { email, _id, firstName, role } = createdUser;
-        const user = { email, _id, firstName, role };
-        res.status(201).json({ user: user });
+        const payload = { _id, email, firstName, role };
+        // Create and sign JWT token
+        const authToken = getAuthToken(payload);
+        res.status(201).json({ authToken: authToken });
       })
       .catch((error) => {
         if (error instanceof mongoose.Error.ValidationError) {
@@ -102,11 +113,7 @@ router.post("/login", (req, res, next) => {
           const { _id, email, firstName, role } = foundUser;
           const payload = { _id, email, firstName, role };
           // Create and sign JWT token
-          const authToken = jwt.sign(
-            payload,
-            process.env.TOKEN_SECRET,
-            { algorithm: 'HS256', expiresIn: "6h"}
-          );
+          const authToken = getAuthToken(payload);
           return res.status(200).json({ authToken: authToken});
         });
     })
