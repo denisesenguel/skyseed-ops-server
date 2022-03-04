@@ -12,7 +12,7 @@ router.get("/", (req, res, next) => {
 
 router.use("/auth", authRoutes);
 router.use("/projects", isAuthenticated, projectsRoutes);
-router.use("/customers", customersRoutes);
-router.use("/users", usersRoutes);
+router.use("/customers", isAuthenticated, customersRoutes);
+router.use("/users", isAuthenticated, usersRoutes);
 
 module.exports = router;
