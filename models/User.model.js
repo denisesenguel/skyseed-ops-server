@@ -17,7 +17,9 @@ const userSchema = new Schema(
     }, 
     role: {
       type: String,
-      enum: ['internal', 'admin']
+      enum: ['internal', 'admin'],
+      required: true,
+      default: 'internal'
     }
   },
   {
