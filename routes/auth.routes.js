@@ -35,14 +35,20 @@ router.post("/signup", (req, res, next) => {
   // Use regex to validate the email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   if (!emailRegex.test(email)) {
-    res.status(400).json({ message: 'Provide a valid email address.' });
+    res.status(400).json({
+      message: 'Email invalid.',
+      fields: ['email']
+    });
     return;
   }
   
   // Use regex to validate the password format
   const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
   if (!passwordRegex.test(password)) {
-    res.status(400).json({ message: 'Password must have at least 6 characters and contain at least one number, one lowercase and one uppercase letter.' });
+    res.status(400).json({ 
+      message: 'Password must have at least 6 characters and contain number, lowercase and uppercase letters.',
+      fields: ['password'] 
+    });
     return;
   }
 
@@ -75,12 +81,7 @@ router.post("/signup", (req, res, next) => {
         res.status(201).json({ authToken: authToken });
       })
       .catch((error) => {
-        if (error instanceof mongoose.Error.ValidationError) {
-          return res.status(400).json({ message: error.message });
-        } else {
-          // Hand over to error handling middleware
-          next(error)
-        }
+        next(error);
       });
   });
 });

@@ -2,15 +2,14 @@ const router = require("express").Router();
 const Project = require("../models/Project.model");
 const { isValidMongooseId } = require("../middleware/isValidMongooseId");
 const { isOwner } = require("../middleware/isOwner");
+const mongoose = require('mongoose');
 
 router.post("/", async (req, res, next) => {
     try {
         const createdUser = await Project.create(req.body);
         return res.status(201).json(createdUser);
     } catch (err) {
-        if (err.code === 11000) {
-            return res.status(400).json({ message: "Title already taken."})
-        }
+        console.log("unique error: ", err)
         next(err);
     }
 });
@@ -44,9 +43,6 @@ router.put("/:id", isValidMongooseId, isOwner, async (req, res, next) => {
         } 
         return res.status(200).json(updatedProject);
     } catch (err) {
-        if (err.code === 11000) {
-            return res.status(400).json({ message: "Title already taken."})
-        }
         next(err);
     }
 });

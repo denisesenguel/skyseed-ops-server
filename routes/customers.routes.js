@@ -8,11 +8,7 @@ router.post("/", async (req, res, next) => {
         const newCustomer = await Customer.create(req.body);
         return res.status(201).json(newCustomer);
     } catch (err) {
-        if (err.code === 11000) {
-            return res.status(400).json({ message: "Email already taken."})
-        } else {
-            next(err);
-        }
+        next(err);
     }
 });
 
