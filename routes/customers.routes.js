@@ -2,6 +2,7 @@ const router = require("express").Router();
 const Customer = require("../models/Customer.model");
 const { isValidMongooseId } = require("../middleware/isValidMongooseId");
 
+// may receive an object or an array of objects as request body.
 router.post("/", async (req, res, next) => {
     try {
         const newCustomer = await Customer.create(req.body);
