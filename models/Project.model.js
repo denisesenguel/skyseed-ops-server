@@ -34,25 +34,23 @@ const projectSchema = new Schema(
             type: Number,
             min: 0
         },
-        sowingDate: Date,
         managers: {
             type: [{
                 type: Schema.Types.ObjectId,
                 ref: 'User'
-            }]
-            // add later
-            // required: true
+            }],
+            required: true
         },
         customer: {
             type: Schema.Types.ObjectId,
-            ref: 'Customer'
-            // later: make this an array and add
-            // required: true
+            ref: 'Customer',
+            required: true
         },
         status: {
             type: String,
             enum: ['planned', 'ongoing', 'finished']
-        }
+        },
+        sowingDate: Date,
     },
     {
         timestamps: true
