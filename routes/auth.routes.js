@@ -15,6 +15,9 @@ const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 const { isValidMongooseId } = require("../middleware/isValidMongooseId");
 
+// require email controllers
+const sendEmailConfirm = require("../controllers/email.send.js");
+
 function getAuthToken(payload) {
   const authToken = jwt.sign(
     payload,
@@ -54,40 +57,52 @@ router.post("/signup", (req, res, next) => {
   }
 
   // Search the database for a user with the submitted email
-  User.findOne({ email }).then((found) => {
-    // If the user is found, send message
-    if (found) {
-      return res.status(400).json({ message: "Email already taken." });
-    }
-
-    // if user is not found, create a new user - start with hashing the password
-    return bcrypt
-      .genSalt(saltRounds)
-      .then((salt) => bcrypt.hash(password, salt))
-      .then((hashedPassword) => {
-        // Create a user and save it in the database
-        return User.create({
-          email,
-          password: hashedPassword,
-          firstName,
-          role: 'internal'
-        });
-      })
-      .then((createdUser) => {
-        // Removing password hash to not expose publicly
-        const { email, _id, firstName, role } = createdUser;
-        const payload = { _id, email, firstName, role };
-        // Create and sign JWT token
-        const authToken = getAuthToken(payload);
-
-        // TODO: SEND EMAIL
-
-        res.status(201).json({ authToken: authToken });
-      })
-      .catch((error) => {
-        next(error);
-      });
-  });
+  User.findOne({ email })
+    .then((found) => {
+        
+      if (found && found.confirmed) {
+        // if user already exists with confirmed email, send error response
+        return res.status(400).json({ message: "Email already taken." });
+      } else if (found && !found.confirmed) {
+        // if user exists without confirmed email, resend
+        const { password, ...userDetails } = found;
+        return sendEmailConfirm(userDetails)
+          .then(() => {
+            return res.status(400).json({ message: "Email already exists. Confirmation link resent."})
+          })
+          .catch((error) => {
+            next(error)
+          })
+      } else {
+        // if user is not found, create a new user - start with hashing the password
+        return bcrypt
+          .genSalt(saltRounds)
+          .then((salt) => bcrypt.hash(password, salt))
+          .then((hashedPassword) => {
+            // Create a user and save it in the database
+            return User.create({
+              email,
+              password: hashedPassword,
+              firstName,
+              role: 'internal'
+            });
+          })
+          .then((createdUser) => {
+            // Send confirmation email
+            const { password, ...userDetails } = createdUser; 
+            sendEmailConfirm(userDetails);
+          })
+          .then(() => {
+            res.status(201).json({ message: "Sucess! User created and confirmation mail sent." });
+          })
+          .catch((error) => {
+            next(error);
+          });
+      }
+    })
+    .catch((error) => {
+      next(error);
+    });
 });
 
 router.post("/login", (req, res, next) => {
@@ -134,9 +149,9 @@ router.post("/login", (req, res, next) => {
 });
 
 
-router.get("/confirm/:id", isValidMongooseId, (req, res, next) => {
+router.post("/confirm/:id", isValidMongooseId, (req, res, next) => {
   // find existing user and set confirmed to true
-  User.findByIdAndUpdate(req.params.id, { confirmed: true }, { new: true })
+  User.findByIdAndUpdate(req.params.id, { confirmed: true })
   .then((userDB) => {
     if (!userDB) {
       return res.status(404).json({ message: "User not found." });
