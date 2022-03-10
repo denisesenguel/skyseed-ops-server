@@ -13,6 +13,7 @@ const User = require("../models/User.model");
 
 // Require necessary middleware in order to control access to specific routes
 const { isAuthenticated } = require("../middleware/jwt.middleware");
+const { isValidMongooseId } = require("../middleware/isValidMongooseId");
 
 function getAuthToken(payload) {
   const authToken = jwt.sign(
@@ -78,6 +79,9 @@ router.post("/signup", (req, res, next) => {
         const payload = { _id, email, firstName, role };
         // Create and sign JWT token
         const authToken = getAuthToken(payload);
+
+        // TODO: SEND EMAIL
+
         res.status(201).json({ authToken: authToken });
       })
       .catch((error) => {
@@ -103,6 +107,11 @@ router.post("/login", (req, res, next) => {
         return res.status(401).json({ errorMessage: "User not found." });
       }
 
+      // If the user hasn't confirmed their email adress yet, return 401 as well
+      if (!foundUser.confirmed) {
+        return res.status(401).json({errorMessage: "Email still needs to be confirmed."})
+      }
+
       // If user is found based on the username, check if the in putted password matches the one saved in the database
       bcrypt
         .compare(password, foundUser.password)
@@ -115,7 +124,7 @@ router.post("/login", (req, res, next) => {
           const payload = { _id, email, firstName, role };
           // Create and sign JWT token
           const authToken = getAuthToken(payload);
-          return res.status(200).json({ authToken: authToken});
+          return res.status(200).json({ authToken: authToken });
         });
     })
     .catch((error) => {
@@ -123,6 +132,21 @@ router.post("/login", (req, res, next) => {
       next(error);
     });
 });
+
+
+router.get("/confirm/:id", isValidMongooseId, (req, res, next) => {
+  // find existing user and set confirmed to true
+  User.findByIdAndUpdate(req.params.id, { confirmed: true }, { new: true })
+  .then((userDB) => {
+    if (!userDB) {
+      return res.status(404).json({ message: "User not found." });
+    } 
+    return res.status(200).json({ message: "Email confirmed. "});  
+  })
+  .catch((error) => {
+    next(error)
+  })
+})
 
 router.get("/verify", isAuthenticated, (req, res, next) => {
   console.log("req.payload", req.payload);

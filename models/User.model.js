@@ -20,6 +20,11 @@ const userSchema = new Schema(
       enum: ['internal', 'admin'],
       required: true,
       default: 'internal'
+    },
+    confirmed: {
+      type: Boolean,
+      required: true,
+      default: false
     }
   },
   {
