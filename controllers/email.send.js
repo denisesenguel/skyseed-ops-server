@@ -21,7 +21,7 @@ async function sendEmailConfirm(user) {
     // set to and from email addresses
     const contacts = {
         from: process.env.MAIL_USER,
-        to
+        to: user.email
     }
 
     const content = {
@@ -31,11 +31,11 @@ async function sendEmailConfirm(user) {
             <p> Thanks for signing up! Just one step missing until you can use the Skyseed App:</p>
             <a href=${process.env.ORIGIN}/confirm/${user._id}> Click to confirm your email </a>
         `,
-        text: `Copy and paste this link: ${process.env.ORIGIN}/confirm/${userId}`
+        text: `Copy and paste this link: ${process.env.ORIGIN}/confirm/${user._id}`
     };
 
     const email = Object.assign({}, content, contacts);
-    await transporter.sendMail(email);
+    return await transporter.sendMail(email);
 }
 
 module.exports = sendEmailConfirm;
