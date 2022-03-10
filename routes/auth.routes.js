@@ -45,6 +45,14 @@ router.post("/signup", (req, res, next) => {
     });
     return;
   }
+
+  // If allowed domains are specified, check if email is allowed
+  if (process.env.ALLOWED_DOMAINS) {
+    const emailDomain = email.split("@")[1];
+    if (!process.env.ALLOWED_DOMAINS.split(", ").includes(emailDomain)) {
+      return res.status(400).json({ message: "Email domain not allowed." })
+    }
+  }
   
   // Use regex to validate the password format
   const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
@@ -65,8 +73,8 @@ router.post("/signup", (req, res, next) => {
         return res.status(400).json({ message: "Email already taken." });
       } else if (found && !found.confirmed) {
         // if user exists without confirmed email, resend
-        const { password, ...userDetails } = found;
-        return sendEmailConfirm(userDetails)
+        const { email, _id, firstName } = found;
+        return sendEmailConfirm({ email, _id, firstName})
           .then(() => {
             return res.status(400).json({ message: "Email already exists. Confirmation link resent."})
           })
@@ -89,8 +97,8 @@ router.post("/signup", (req, res, next) => {
           })
           .then((createdUser) => {
             // Send confirmation email
-            const { password, ...userDetails } = createdUser; 
-            sendEmailConfirm(userDetails);
+            const { email, _id, firstName } = createdUser;
+            sendEmailConfirm({ email, _id, firstName});
           })
           .then(() => {
             res.status(201).json({ message: "Sucess! User created and confirmation mail sent." });

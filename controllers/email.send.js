@@ -23,6 +23,7 @@ async function sendEmailConfirm(user) {
         from: process.env.MAIL_USER,
         to: user.email
     }
+    console.log("contacts: ", contacts)
 
     const content = {
         subject: "Confirm your Email",
