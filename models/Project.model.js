@@ -51,6 +51,35 @@ const projectSchema = new Schema(
             enum: ['planned', 'ongoing', 'finished']
         },
         sowingDate: Date,
+        sowingDensity: {
+            type: Number,
+            min: 0,
+            max: 100
+        },
+        seedsAvailable: Boolean,
+        seedsOrdered: {
+            type: Boolean,
+            default: false
+        },
+        areaType: Array(String),
+        pilots: {
+            type: [{
+                type: Schema.Types.ObjectId,
+                ref: 'User'
+            }]
+        },
+        permitRequested: {
+            type: Boolean,
+            default: false
+        },
+        permitGranted: {
+            type: Boolean,
+            default: false
+        },
+        areaConfirmed: {
+            type: Boolean,
+            default: false
+        }
     },
     {
         timestamps: true
