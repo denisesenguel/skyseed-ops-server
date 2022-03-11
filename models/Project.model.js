@@ -56,7 +56,15 @@ const projectSchema = new Schema(
             min: 0,
             max: 100
         },
-        seedsAvailable: Boolean,
+        seedMixture: [{
+            seedType: String,
+            percentage: {
+                type: Number,
+                min: 0,
+                max: 100
+            },
+            available: Boolean
+        }],
         seedsOrdered: {
             type: Boolean,
             default: false
