@@ -24,7 +24,9 @@ router.get("/", async (req, res, next) => {
 
 router.get("/:id", isValidMongooseId, async (req, res, next) => {
     try { 
-        const myProject = await Project.findById(req.params.id).populate("managers customer pilots");
+        const myProject = await Project
+            .findById(req.params.id)
+            .populate("managers customer pilots");
         if (!myProject) {
             return res.status(404).json({ message: "Project does not exist. " });
         }
@@ -36,7 +38,9 @@ router.get("/:id", isValidMongooseId, async (req, res, next) => {
 
 router.put("/:id", isValidMongooseId, isOwnerOrManager, async (req, res, next) => {
     try {
-        const updatedProject = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedProject = await Project
+            .findByIdAndUpdate(req.params.id, req.body, { new: true })
+            .populate("managers customer pilots");
         if (!updatedProject) {
             return res.status(404).json({ message: "Project does not exist" })
         } 
