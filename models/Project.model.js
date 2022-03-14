@@ -87,6 +87,14 @@ const projectSchema = new Schema(
         areaConfirmed: {
             type: Boolean,
             default: false
+        },
+        travelBooked: {
+            type: Boolean,
+            default: false
+        },
+        contractClarified: {
+            type: Boolean,
+            default: false
         }
     },
     {
